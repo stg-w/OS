@@ -1,506 +1,290 @@
-import pandas as pd
+"""
+LivingMemoryOS-CAMR (v2)
+Clinical-Aware Memory Replacement for resource-constrained healthcare devices.
+
+Changes from the original prototype are called out inline with "# FIX:"
+comments so they're easy to diff against the original script.
+"""
+
+import heapq
+import itertools
+
 import numpy as np
-
+import pandas as pd
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (
+    average_precision_score,
+    classification_report,
+    confusion_matrix,
+    roc_auc_score,
+)
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import accuracy_score
 
 # =====================================================
-# LOAD DATASET
+# CONFIG  (FIX: magic numbers pulled out and named so they
+# can be justified/tuned/cited in a patent spec)
 # =====================================================
 
-df = pd.read_csv(
-    "ICU_Patient_Monitoring_Mortality_Prediction_15000.csv"
+RANDOM_STATE = 42
+
+CARE_LEVEL_THRESHOLDS = {"ER": 0.45, "ICU": 0.35, "HDU": 0.20}
+BED_PRIORITY = {"ER": 1.00, "ICU": 0.80, "HDU": 0.50, "WARD": 0.20}
+ESCALATION_SCORE = {"ER": 1.00, "ICU": 0.75, "HDU": 0.50, "WARD": 0.25}
+
+CMS_WEIGHTS = dict(
+    criticality=0.30,
+    severity=0.20,
+    bed_priority=0.15,
+    biomarker_risk=0.15,
+    sepsis_risk=0.10,
+    escalation_score=0.10,
 )
 
+# FIX: three separately-budgeted tiers instead of one flat 100-slot list.
+# This is what your problem statement actually describes; the original
+# code only *labeled* pages by tier inside a single pool, so nothing
+# stopped Emergency pages from being crowded out or Normal from
+# swallowing the whole budget.
+TIER_CAPACITY = {"EMERGENCY": 15, "HIGH_PRIORITY": 35, "NORMAL": 50}
+
+# FIX: this threshold used to be the 90th percentile of the *test set's*
+# own criticality scores -- i.e. the cutoff was defined by the data it
+# was then evaluated against. That's circular and won't generalize to a
+# live device. Fix it as a clinically-motivated constant (tune this
+# against a validation set, not the reported test set).
+CRITICAL_THRESHOLD = 0.30
+
 # =====================================================
-# FEATURES
+# LOAD DATA
 # =====================================================
 
+df = pd.read_csv("ICU_Patient_Monitoring_Mortality_Prediction_15000.csv")
+
 features = [
-    "heart_rate_mean",
-    "spo2_mean",
-    "respiratory_rate_mean",
-    "temperature_mean",
-    "apache_score",
-    "sofa_score",
-    "glucose_mean",
-    "lactate_mean",
-    "comorbidity_score",
-    "sepsis_flag"
+    "heart_rate_mean", "spo2_mean", "respiratory_rate_mean",
+    "temperature_mean", "apache_score", "sofa_score",
+    "glucose_mean", "lactate_mean", "comorbidity_score", "sepsis_flag",
 ]
 
 X = df[features]
 y = df["mortality_label"]
 
-# =====================================================
-# TRAIN / TEST SPLIT
-# =====================================================
-
+# FIX: stratify=y. mortality_label is ~77/23 imbalanced; an unstratified
+# split can shift that ratio in the test fold and makes accuracy alone
+# misleading (see metrics below).
 X_train, X_test, y_train, y_test = train_test_split(
-    X,
-    y,
-    test_size=0.2,
-    random_state=42
+    X, y, test_size=0.2, random_state=RANDOM_STATE, stratify=y
 )
 
+# FIX: keep the original dataframe rows (esp. patient_id) aligned to the
+# test split so every memory page can be traced back to a real patient
+# instead of a throwaway positional index.
+test_meta = df.loc[X_test.index].reset_index(drop=True)
+X_test = X_test.reset_index(drop=True)
+
 # =====================================================
-# TRAIN MODEL
+# MODEL
 # =====================================================
 
-model = RandomForestClassifier(
-    n_estimators=200,
-    max_depth=10,
-    random_state=42
+base_model = RandomForestClassifier(
+    n_estimators=200, max_depth=10, random_state=RANDOM_STATE
 )
 
+# FIX: RandomForest's predict_proba is not a calibrated probability --
+# treating it directly as a "mortality risk" that then drives clinical
+# escalation (ER/ICU/HDU/WARD) is exactly the kind of claim a reviewer
+# (or an examiner, or a hospital IRB) will push back on. Calibrate it.
+model = CalibratedClassifierCV(base_model, method="isotonic", cv=5)
 model.fit(X_train, y_train)
 
-# =====================================================
-# MODEL EVALUATION
-# =====================================================
-
 predictions = model.predict(X_test)
+probs = model.predict_proba(X_test)[:, 1]
 
-accuracy = accuracy_score(
-    y_test,
-    predictions
-)
-
-print("\n==============================")
+# FIX: report metrics that mean something under class imbalance, not
+# just accuracy (a model that always predicts "survives" would still
+# score ~0.77 accuracy here).
+print("=" * 50)
 print("MODEL PERFORMANCE")
-print("==============================")
-print("Accuracy:", round(accuracy, 4))
+print("=" * 50)
+print(classification_report(y_test, predictions, digits=3))
+print("ROC-AUC:", round(roc_auc_score(y_test, probs), 4))
+print("PR-AUC :", round(average_precision_score(y_test, probs), 4))
+print("Confusion matrix:\n", confusion_matrix(y_test, predictions))
+
+criticality_scores = probs
 
 # =====================================================
-# MORTALITY RISK / CRITICALITY
+# CARE ESCALATION
 # =====================================================
 
-probs = model.predict_proba(X_test)
-
-criticality_scores = probs[:, 1]
-
-print("\nMax Criticality:",
-      round(criticality_scores.max(), 4))
-
-print("Min Criticality:",
-      round(criticality_scores.min(), 4))
-
-print("Average Criticality:",
-      round(criticality_scores.mean(), 4))
-
-# =====================================================
-# TOP 10% = CRITICAL
-# =====================================================
-
-critical_threshold = np.percentile(
-    criticality_scores,
-    90
-)
-
-print(
-    "\nCritical Threshold:",
-    round(critical_threshold, 4)
-)
-
-# =====================================================
-# CARE ESCALATION ENGINE
-# =====================================================
-
-def assign_care_level(criticality):
-
-    if criticality >= 0.45:
+def assign_care_level(criticality: float) -> str:
+    if criticality >= CARE_LEVEL_THRESHOLDS["ER"]:
         return "ER"
-
-    elif criticality >= 0.35:
+    if criticality >= CARE_LEVEL_THRESHOLDS["ICU"]:
         return "ICU"
-
-    elif criticality >= 0.20:
+    if criticality >= CARE_LEVEL_THRESHOLDS["HDU"]:
         return "HDU"
+    return "WARD"
 
-    else:
-        return "WARD"
 
-# =====================================================
-# BED PRIORITIES
-# =====================================================
-
-BED_PRIORITY = {
-    "ER": 1.00,
-    "ICU": 0.80,
-    "HDU": 0.50,
-    "WARD": 0.20
-}
-
-# =====================================================
-# ESCALATION PRIORITY
-# =====================================================
-
-ESCALATION_SCORE = {
-    "ER": 1.00,
-    "ICU": 0.75,
-    "HDU": 0.50,
-    "WARD": 0.25
-}
-
-# =====================================================
-# CREATE MEMORY PAGES
-# =====================================================
-
-memory_pages = []
-
-for idx in range(len(X_test)):
-
+def build_page(idx: int) -> dict:
     row = X_test.iloc[idx]
-
-    criticality = float(
-        criticality_scores[idx]
-    )
-
-    care_level = assign_care_level(
-        criticality
-    )
-
-    bed_priority = BED_PRIORITY[
-        care_level
-    ]
-
-    escalation_score = ESCALATION_SCORE[
-        care_level
-    ]
-
-    # =================================
-    # SEVERITY
-    # =================================
-
-    severity = (
-        (row["apache_score"] / 40)
-        +
-        (row["sofa_score"] / 20)
-    ) / 2
+    meta = test_meta.iloc[idx]
+    criticality = float(criticality_scores[idx])
+    care_level = assign_care_level(criticality)
 
     severity = min(
-        severity,
-        1.0
+        ((row["apache_score"] / 40) + (row["sofa_score"] / 20)) / 2, 1.0
     )
-
-    # =================================
-    # BIOMARKER RISK
-    # =================================
-
-    biomarker_risk = min(
-        row["lactate_mean"] / 10,
-        1.0
-    )
-
-    # =================================
-    # SEPSIS RISK
-    # =================================
-
-    sepsis_risk = float(
-        row["sepsis_flag"]
-    )
-
-    # =================================
-    # CMS
-    # =================================
+    biomarker_risk = min(row["lactate_mean"] / 10, 1.0)
+    sepsis_risk = float(row["sepsis_flag"])
 
     cms = (
-        0.30 * criticality
-        +
-        0.20 * severity
-        +
-        0.15 * bed_priority
-        +
-        0.15 * biomarker_risk
-        +
-        0.10 * sepsis_risk
-        +
-        0.10 * escalation_score
+        CMS_WEIGHTS["criticality"] * criticality
+        + CMS_WEIGHTS["severity"] * severity
+        + CMS_WEIGHTS["bed_priority"] * BED_PRIORITY[care_level]
+        + CMS_WEIGHTS["biomarker_risk"] * biomarker_risk
+        + CMS_WEIGHTS["sepsis_risk"] * sepsis_risk
+        + CMS_WEIGHTS["escalation_score"] * ESCALATION_SCORE[care_level]
     )
 
-    # =================================
-    # MEMORY TIERS
-    # =================================
-
     tier = "NORMAL"
-
-    if criticality >= critical_threshold:
+    if criticality >= CRITICAL_THRESHOLD:
         tier = "HIGH_PRIORITY"
-
-    if (
-        criticality >= critical_threshold
-        and row["sepsis_flag"] == 1
-    ):
+    if criticality >= CRITICAL_THRESHOLD and row["sepsis_flag"] == 1:
         tier = "EMERGENCY"
 
-    # =================================
-    # EXPLAINABILITY
-    # =================================
-
     reasons = []
-
-    if criticality >= critical_threshold:
-        reasons.append(
-            "High Mortality Risk"
-        )
-
+    if criticality >= CRITICAL_THRESHOLD:
+        reasons.append("High Mortality Risk")
     if row["sepsis_flag"] == 1:
-        reasons.append(
-            "Sepsis"
-        )
-
+        reasons.append("Sepsis")
     if row["lactate_mean"] > 4:
-        reasons.append(
-            "High Lactate"
-        )
-
+        reasons.append("High Lactate")
     if care_level == "ER":
-        reasons.append(
-            "ER Escalation"
-        )
-
+        reasons.append("ER Escalation")
     if tier == "EMERGENCY":
-        reasons.append(
-            "Emergency Preservation"
-        )
+        reasons.append("Emergency Preservation")
+    if not reasons:
+        reasons.append("Low Clinical Priority")
 
-    if len(reasons) == 0:
-        reasons.append(
-            "Low Clinical Priority"
-        )
-
-    page = {
-
-        "page_id":
-        idx,
-
-        "criticality":
-        round(criticality, 4),
-
-        "care_level":
-        care_level,
-
-        "severity":
-        round(float(severity), 4),
-
-        "biomarker_risk":
-        round(float(biomarker_risk), 4),
-
-        "sepsis":
-        int(row["sepsis_flag"]),
-
-        "cms":
-        round(float(cms), 4),
-
-        "tier":
-        tier,
-
-        "reason":
-        ", ".join(reasons)
+    return {
+        "page_id": idx,
+        "patient_id": meta["patient_id"],
+        "criticality": round(criticality, 4),
+        "care_level": care_level,
+        "severity": round(float(severity), 4),
+        "biomarker_risk": round(float(biomarker_risk), 4),
+        "sepsis": int(row["sepsis_flag"]),
+        "cms": round(float(cms), 4),
+        "tier": tier,
+        "reason": ", ".join(reasons),
     }
 
-    memory_pages.append(page)
+
+memory_pages = [build_page(i) for i in range(len(X_test))]
 
 # =====================================================
-# FIFO MEMORY
+# BASELINE: pure FIFO over a single 100-slot pool
+# (kept from the original script as the "access-history-only"
+# baseline the problem statement argues against)
 # =====================================================
 
-MEMORY_SIZE = 100
-
+FIFO_SIZE = sum(TIER_CAPACITY.values())
 fifo_memory = []
-
 for page in memory_pages:
-
-    if len(fifo_memory) >= MEMORY_SIZE:
+    if len(fifo_memory) >= FIFO_SIZE:
         fifo_memory.pop(0)
-
     fifo_memory.append(page)
 
 # =====================================================
-# LIVING MEMORY OS
+# LIVING MEMORY OS -- three independently bounded tiers,
+# each a min-heap on CMS for O(log n) eviction instead of the
+# O(n) full-list scan the original version did per admission.
 # =====================================================
 
-living_memory = []
+_counter = itertools.count()  # tie-breaker so heap never compares dicts
 
-emergency_memory = []
 
+class TierPool:
+    def __init__(self, capacity: int, evictable: bool = True):
+        self.capacity = capacity
+        self.evictable = evictable
+        self.heap = []  # (cms, tie, page)
+        self.by_id = {}
+
+    def admit(self, page: dict) -> bool:
+        if len(self.heap) < self.capacity:
+            entry = (page["cms"], next(_counter), page)
+            heapq.heappush(self.heap, entry)
+            self.by_id[page["page_id"]] = page
+            return True
+        if not self.evictable:
+            # Emergency tier: never silently evict. At true capacity we
+            # reject/alert rather than displace another critical patient.
+            return False
+        weakest_cms, _, weakest_page = self.heap[0]
+        if page["cms"] > weakest_cms:
+            heapq.heapreplace(self.heap, (page["cms"], next(_counter), page))
+            del self.by_id[weakest_page["page_id"]]
+            self.by_id[page["page_id"]] = page
+            return True
+        return False
+
+    def pages(self):
+        return [p for _, _, p in self.heap]
+
+
+tiers = {
+    "EMERGENCY": TierPool(TIER_CAPACITY["EMERGENCY"], evictable=False),
+    "HIGH_PRIORITY": TierPool(TIER_CAPACITY["HIGH_PRIORITY"]),
+    "NORMAL": TierPool(TIER_CAPACITY["NORMAL"]),
+}
+
+rejected_emergency = 0
 for page in memory_pages:
+    admitted = tiers[page["tier"]].admit(page)
+    if not admitted and page["tier"] == "EMERGENCY":
+        rejected_emergency += 1  # capacity-full alert condition
 
-    if page["tier"] == "EMERGENCY":
-        emergency_memory.append(page)
-
-    if len(living_memory) < MEMORY_SIZE:
-
-        living_memory.append(page)
-
-    else:
-
-        candidates = [
-
-            p
-
-            for p in living_memory
-
-            if p["tier"] != "EMERGENCY"
-        ]
-
-        if len(candidates) == 0:
-            continue
-
-        victim = min(
-            candidates,
-            key=lambda x: x["cms"]
-        )
-
-        if page["cms"] > victim["cms"]:
-
-            living_memory.remove(
-                victim
-            )
-
-            living_memory.append(
-                page
-            )
+living_memory = (
+    tiers["EMERGENCY"].pages()
+    + tiers["HIGH_PRIORITY"].pages()
+    + tiers["NORMAL"].pages()
+)
 
 # =====================================================
-# FIFO METRICS
+# METRICS: fraction of clinically-critical pages retained
 # =====================================================
 
-fifo_critical = 0
+def critical_fraction(pages):
+    if not pages:
+        return 0.0
+    return sum(p["criticality"] >= CRITICAL_THRESHOLD for p in pages) / len(pages)
 
-for page in fifo_memory:
 
-    if page["criticality"] > critical_threshold:
-        fifo_critical += 1
+fifo_critical = sum(p["criticality"] >= CRITICAL_THRESHOLD for p in fifo_memory)
+living_critical = sum(p["criticality"] >= CRITICAL_THRESHOLD for p in living_memory)
 
-# =====================================================
-# LIVING MEMORY METRICS
-# =====================================================
-
-living_critical = 0
-
-for page in living_memory:
-
-    if page["criticality"] > critical_threshold:
-        living_critical += 1
-
-# =====================================================
-# MEMORY TIER STATS
-# =====================================================
-
-normal_count = 0
-high_count = 0
-emergency_count = 0
-
-for page in living_memory:
-
-    if page["tier"] == "NORMAL":
-        normal_count += 1
-
-    elif page["tier"] == "HIGH_PRIORITY":
-        high_count += 1
-
-    elif page["tier"] == "EMERGENCY":
-        emergency_count += 1
-
-# =====================================================
-# RESULTS
-# =====================================================
-
-print("\n==============================")
+print("\n" + "=" * 50)
 print("RESULTS")
-print("==============================")
+print("=" * 50)
+print("FIFO Critical Pages:", fifo_critical, f"/ {len(fifo_memory)}")
+print("LivingMemoryOS Critical Pages:", living_critical, f"/ {len(living_memory)}")
+print("Emergency pages rejected at full capacity:", rejected_emergency)
 
-print(
-    "FIFO Critical Pages:",
-    fifo_critical
-)
-
-print(
-    "LivingMemoryOS Critical Pages:",
-    living_critical
-)
-
-print(
-    "\nMemory Tier Distribution"
-)
-
-print(
-    "Normal:",
-    normal_count
-)
-
-print(
-    "High Priority:",
-    high_count
-)
-
-print(
-    "Emergency:",
-    emergency_count
-)
-
-print(
-    "Emergency Memory Pool:",
-    len(emergency_memory)
-)
+for name, pool in tiers.items():
+    print(f"{name}: {len(pool.pages())}/{pool.capacity}")
 
 if fifo_critical > 0:
-
-    improvement = (
-        (
-            living_critical
-            -
-            fifo_critical
-        )
-        /
-        fifo_critical
-    ) * 100
-
-    print(
-        "\nImprovement:",
-        round(improvement, 2),
-        "%"
-    )
-
-# =====================================================
-# TOP RETAINED PAGES
-# =====================================================
-
-top_pages = sorted(
-    living_memory,
-    key=lambda x: x["cms"],
-    reverse=True
-)
-
-print("\n==============================")
-print("TOP 10 RETAINED PAGES")
-print("==============================")
-
-for page in top_pages[:10]:
-
-    print(
-        f"Page:{page['page_id']} | "
-        f"CMS:{page['cms']} | "
-        f"Tier:{page['tier']} | "
-        f"Care:{page['care_level']} | "
-        f"{page['reason']}"
-    )
+    improvement = ((living_critical - fifo_critical) / fifo_critical) * 100
+    print("\nImprovement over FIFO:", round(improvement, 2), "%")
 
 # =====================================================
 # EXPORT
 # =====================================================
 
-results_df = pd.DataFrame(
-    living_memory
-)
-
-results_df.to_csv(
-    "livingmemory_results.csv",
-    index=False
-)
-
-print(
-    "\nSaved: livingmemory_results.csv"
-)
+results_df = pd.DataFrame(living_memory)
+results_df.to_csv("livingmemory_results_v2.csv", index=False)
+print("\nSaved: livingmemory_results_v2.csv")
