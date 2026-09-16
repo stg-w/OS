@@ -2,7 +2,8 @@ import pandas as pd
 
 # Load master dataset with explicit string types for careunit columns to fix the warning
 master = pd.read_csv(
-    "master.csv", 
+    r"C:\Users\subiw\OS\data\master.csv", 
+    low_memory=False
     dtype={"first_careunit": str, "last_careunit": str}
 )
 
@@ -20,7 +21,8 @@ y = master["hospital_expire_flag"]
 
 # Load transfers with explicit data types for matching
 transfers = pd.read_csv(
-    "transfers_sample.csv",
+    r"C:\Users\subiw\OS\data\transfers_sample.csv",
+    low_memory=False
     dtype={"subject_id": int}
 )
 
@@ -48,7 +50,8 @@ master["escalation_risk"] = (
 
 # Load lab events with explicit data types for matching and flag checking
 labs = pd.read_csv(
-    "labevents_sample.csv",
+    r"C:\Users\subiw\OS\data\labevents_sample.csv",
+    low_memory=False
     dtype={"subject_id": int, "flag": str}
 )
 

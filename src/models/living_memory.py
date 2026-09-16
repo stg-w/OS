@@ -4,7 +4,7 @@ import pandas as pd
 # LOAD MODEL OUTPUT
 # =====================================================
 
-master = pd.read_csv("model_output.csv")
+master = pd.read_csv(r"C:\Users\subiw\OS\data\model_output.csv")
 
 # =====================================================
 # PATIENT-CRITICALITY INHERITANCE
