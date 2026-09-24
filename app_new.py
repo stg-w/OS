@@ -34,11 +34,11 @@ h1,h2,h3{
 # =========================
 
 results = pd.read_csv(
-    "livingmemory_results_v4.csv"
+    r"data\livingmemory_results_new.csv"
 )
 
 capacity = pd.read_csv(
-    "capacity_evolution_v4.csv"
+    r"data\capacity_evolution_new.csv"
 )
 
 # =========================
@@ -55,6 +55,9 @@ st.subheader(
 
 st.write(
 """
+LivingMemoryOS v4 - Next-Gen Streamlit Application (MIMIC-IV Clinical Cohort)
+Dedicated frontend entrypoint for the 550,818 inpatient admissions dataset.
+Run with: streamlit run app_new.py
 AI-driven memory retention for healthcare edge devices.
 
 Patients are prioritized according to:
@@ -65,10 +68,13 @@ Patients are prioritized according to:
 """
 )
 
+from src.ui.mimic_dashboard import render_mimic_dashboard
 # =========================
 # METRICS
 # =========================
 
+if __name__ == "__main__":
+    render_mimic_dashboard()
 col1,col2,col3,col4 = st.columns(4)
 
 col1.metric(

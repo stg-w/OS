@@ -29,6 +29,15 @@ def get_simulator():
 
 
 def render_dashboard():
+    # Page configuration safely handled
+    try:
+        st.set_page_config(
+            page_title="LivingMemoryOS | Clinical AI Memory Management",
+            layout="wide",
+            initial_sidebar_state="expanded",
+        )
+    except Exception:
+        pass
     # Page configuration
     st.set_page_config(
         page_title="LivingMemoryOS | Clinical AI Memory Management",

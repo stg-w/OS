@@ -5,6 +5,7 @@ Run with: python api_new.py
 """
 
 from src.api.server import app
+from src.api.server_new import run_server
 
 if __name__ == "__main__":
     print("==========================================================")
@@ -17,5 +18,13 @@ if __name__ == "__main__":
     print("   POST /api/v2/simulate")
     print("   GET  /api/v2/admitted")
     print("   GET  /api/v2/capacity-evolution")
+    print(" Available endpoints:")
+    print("   GET  /api/status")
+    print("   POST /api/predict")
+    print("   POST /api/simulate")
+    print("   GET  /api/admitted")
+    print("   GET  /api/capacity-evolution")
     print("==========================================================")
     app.run(host="0.0.0.0", port=5000, debug=False)
+    run_server(host="0.0.0.0", port=5000)
+
