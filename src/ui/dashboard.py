@@ -59,9 +59,35 @@ def render_dashboard():
         section[data-testid="stSidebar"] {
             background-color: #f8fbfe !important;
             border-right: 1px solid #e1effa !important;
+            z-index: 100 !important;
         }
         section[data-testid="stSidebar"] > div {
             background-color: #f8fbfe !important;
+        }
+
+        /* Always-visible Sidebar Toggle / Expand Button */
+        [data-testid="stSidebarCollapsedControl"],
+        [data-testid="collapsedControl"],
+        button[data-testid="stSidebarCollapseButton"] {
+            display: flex !important;
+            visibility: visible !important;
+            opacity: 1 !important;
+            z-index: 999999 !important;
+            background-color: #e8f3fc !important;
+            color: #1a76d1 !important;
+            border: 1px solid #c9e4fb !important;
+            border-radius: 8px !important;
+            padding: 4px 8px !important;
+            top: 10px !important;
+            left: 10px !important;
+            box-shadow: 0 2px 6px rgba(26, 118, 209, 0.15) !important;
+        }
+
+        [data-testid="stSidebarCollapsedControl"]:hover,
+        [data-testid="collapsedControl"]:hover,
+        button[data-testid="stSidebarCollapseButton"]:hover {
+            background-color: #1a76d1 !important;
+            color: #ffffff !important;
         }
 
         /* Animations */
