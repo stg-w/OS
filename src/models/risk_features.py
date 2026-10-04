@@ -1,9 +1,15 @@
+import os
 import pandas as pd
 
+DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "data")
+
 # Load master dataset with explicit string types for careunit columns to fix the warning
+master_path = os.path.join(DATA_DIR, "master.csv") if os.path.exists(os.path.join(DATA_DIR, "master.csv")) else "master.csv"
 master = pd.read_csv(
     r"C:\Users\subiw\OS\data\master.csv", 
     low_memory=False
+    master_path, 
+    low_memory=False,
     dtype={"first_careunit": str, "last_careunit": str}
 )
 
@@ -20,9 +26,12 @@ master["icu_risk"] = (
 y = master["hospital_expire_flag"]
 
 # Load transfers with explicit data types for matching
+transfers_path = os.path.join(DATA_DIR, "transfers_sample.csv") if os.path.exists(os.path.join(DATA_DIR, "transfers_sample.csv")) else "transfers_sample.csv"
 transfers = pd.read_csv(
     r"C:\Users\subiw\OS\data\transfers_sample.csv",
     low_memory=False
+    transfers_path,
+    low_memory=False,
     dtype={"subject_id": int}
 )
 
@@ -49,9 +58,12 @@ master["escalation_risk"] = (
 ).clip(0, 1)
 
 # Load lab events with explicit data types for matching and flag checking
+labs_path = os.path.join(DATA_DIR, "labevents_sample.csv") if os.path.exists(os.path.join(DATA_DIR, "labevents_sample.csv")) else "labevents_sample.csv"
 labs = pd.read_csv(
     r"C:\Users\subiw\OS\data\labevents_sample.csv",
     low_memory=False
+    labs_path,
+    low_memory=False,
     dtype={"subject_id": int, "flag": str}
 )
 
@@ -84,10 +96,13 @@ master["biomarker_risk"] = (
     master["abnormal"] / 20
 ).clip(0, 1)
 
+out_features = os.path.join(DATA_DIR, "features.csv")
 master.to_csv(
     "features.csv",
+    out_features,
     index=False
 )
 
 print("features.csv created")
+print(f"features.csv created at {out_features}")
 print(master.columns.tolist())

@@ -29,6 +29,8 @@ h1,h2,h3{
 </style>
 """, unsafe_allow_html=True)
 
+import os
+
 # =========================
 # LOAD DATA
 # =========================
@@ -36,10 +38,17 @@ h1,h2,h3{
 results = pd.read_csv(
     r"data\livingmemory_results_new.csv"
 )
+def _resolve_csv(filename):
+    for p in [os.path.join("data", filename), filename, os.path.join(os.path.dirname(__file__), "data", filename)]:
+        if os.path.exists(p):
+            return p
+    return os.path.join("data", filename)
 
 capacity = pd.read_csv(
     r"data\capacity_evolution_new.csv"
 )
+results = pd.read_csv(_resolve_csv("livingmemory_results_new.csv"))
+capacity = pd.read_csv(_resolve_csv("capacity_evolution_new.csv"))
 
 # =========================
 # HEADER
@@ -68,7 +77,7 @@ Patients are prioritized according to:
 """
 )
 
-from src.ui.mimic_dashboard import render_mimic_dashboard
+from src.ui.dashboard import render_mimic_dashboard
 # =========================
 # METRICS
 # =========================

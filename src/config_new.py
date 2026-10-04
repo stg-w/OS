@@ -2,13 +2,32 @@
 LivingMemoryOS v4 Configuration & Constants (MIMIC-IV Clinical Dataset)
 """
 
+import os
+
 RANDOM_STATE = 42
+
+_DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+
+def _resolve_data_path(filename: str) -> str:
+    candidates = [
+        os.path.join(_DATA_DIR, filename),
+        os.path.join("data", filename),
+        filename,
+    ]
+    for c in candidates:
+        if os.path.exists(c):
+            return c
+    return candidates[0]
 
 # Dataset Paths
 DATASET_PATH = "features.csv"
 MODEL_OUTPUT_PATH = "model_output.csv"
 RESULTS_V4_PATH = "livingmemory_results_v4.csv"
 CAPACITY_V4_PATH = "capacity_evolution_v4.csv"
+DATASET_PATH = _resolve_data_path("features.csv")
+MODEL_OUTPUT_PATH = _resolve_data_path("model_output.csv")
+RESULTS_V4_PATH = _resolve_data_path("livingmemory_results_new.csv") if os.path.exists(_resolve_data_path("livingmemory_results_new.csv")) else _resolve_data_path("livingmemory_results_v4.csv")
+CAPACITY_V4_PATH = _resolve_data_path("capacity_evolution_new.csv") if os.path.exists(_resolve_data_path("capacity_evolution_new.csv")) else _resolve_data_path("capacity_evolution_v4.csv")
 
 # Model Features & Target
 FEATURES = [

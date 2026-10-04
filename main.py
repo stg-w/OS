@@ -67,6 +67,11 @@ CAPACITY_STEP = 3
 # =====================================================
 
 df = pd.read_csv("ICU_Patient_Monitoring_Mortality_Prediction_15000.csv")
+import os
+_data_path = os.path.join("data", "ICU_Patient_Monitoring_Mortality_Prediction_15000.csv")
+if not os.path.exists(_data_path):
+    _data_path = "ICU_Patient_Monitoring_Mortality_Prediction_15000.csv"
+df = pd.read_csv(_data_path)
 
 features = [
     "heart_rate_mean", "spo2_mean", "respiratory_rate_mean",

@@ -24,6 +24,7 @@ with st.sidebar:
         [
             "MIMIC-IV Clinical Cohort (550k - New Dataset)",
             "ICU Telemetry Telemetry (15k - Legacy Dataset)",
+            "ICU Telemetry (15k - Legacy Dataset)",
         ],
         index=0,
         help="Select the clinical dataset version to evaluate.",
@@ -31,8 +32,9 @@ with st.sidebar:
     st.markdown("---")
 
 if "MIMIC-IV" in selected_dataset:
-    from src.ui.mimic_dashboard import render_mimic_dashboard
-    render_mimic_dashboard()
+    from src.ui.dashboard import render_dashboard
+    from src.ui.dashboard_new import render_dashboard
+    render_dashboard()
 else:
     from src.ui.dashboard import render_dashboard
 if __name__ == "__main__":

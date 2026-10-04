@@ -2,9 +2,22 @@
 LivingMemoryOS Configuration & Constants
 """
 
+import os
+
 RANDOM_STATE = 42
 
 DEFAULT_DATASET_PATH = "ICU_Patient_Monitoring_Mortality_Prediction_15000.csv"
+_DATA_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data")
+_DEFAULT_CSV = "ICU_Patient_Monitoring_Mortality_Prediction_15000.csv"
+DEFAULT_DATASET_PATH = (
+    os.path.join(_DATA_DIR, _DEFAULT_CSV)
+    if os.path.exists(os.path.join(_DATA_DIR, _DEFAULT_CSV))
+    else (
+        os.path.join("data", _DEFAULT_CSV)
+        if os.path.exists(os.path.join("data", _DEFAULT_CSV))
+        else _DEFAULT_CSV
+    )
+)
 
 FEATURES = [
     "heart_rate_mean",
