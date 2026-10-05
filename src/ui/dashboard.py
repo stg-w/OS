@@ -38,12 +38,6 @@ def render_dashboard():
         )
     except Exception:
         pass
-    # Page configuration
-    st.set_page_config(
-        page_title="LivingMemoryOS | Clinical AI Memory Management",
-        layout="wide",
-        initial_sidebar_state="expanded",
-    )
 
     # Mediplus-Inspired Medical Light Theme CSS
     st.markdown(
