@@ -1,6 +1,12 @@
 """
-Mortality Classifier Module
-Trains, calibrates (Isotonic), and evaluates Random Forest on ICU patient vitals.
+Patient Mortality Prediction Module
+
+Loads the prepared ICU patient dataset, trains a Random Forest machine learning model,
+calibrates the predicted probabilities using Isotonic Regression, and evaluates model
+performance using clinical classification metrics. The module provides calibrated
+mortality risk predictions for new patients, which are later used by LivingMemoryOS
+to calculate patient priority scores, determine memory retention decisions, and
+support real-time clinical triage simulations.
 """
 
 import pandas as pd

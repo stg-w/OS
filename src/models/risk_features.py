@@ -1,3 +1,17 @@
+"""
+Clinical Feature Engineering Pipeline
+
+This module constructs the feature dataset used for mortality prediction and
+LivingMemoryOS analysis by integrating patient demographics, ICU stay data,
+hospital transfer history, and laboratory event information. It performs data
+loading, preprocessing, feature extraction, and risk normalization to generate
+key clinical indicators including Age Risk, ICU Risk, Escalation Risk, and
+Biomarker Risk. These engineered features provide a standardized representation
+of patient severity and clinical progression, serving as the foundational input
+for AI-based mortality prediction, Clinical Memory Score (CMS) calculation,
+prognostic retention evaluation, and adaptive memory management simulations.
+"""
+
 import os
 import pandas as pd
 

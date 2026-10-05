@@ -1,3 +1,17 @@
+"""
+AI Risk Prediction Module
+
+This module trains a Random Forest machine learning model to estimate
+in-hospital mortality risk for ICU patients using engineered clinical
+risk features. It loads patient feature data, splits the dataset into
+training and testing subsets, trains the classifier, and generates a
+probability-based AI Risk score for every patient. The resulting AI Risk
+represents the model's estimated likelihood of mortality and serves as a
+primary input for downstream LivingMemoryOS components, including
+Patient-Criticality Inheritance, Clinical Memory Score (CMS) computation,
+prognostic retention decisions, and adaptive memory prioritization.
+"""
+
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.ensemble import RandomForestClassifier

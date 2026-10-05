@@ -1,8 +1,17 @@
 """
-LivingMemoryOS v4 - CLI Benchmark Runner (MIMIC-IV Clinical Cohort)
-Self-Evolving Clinical Memory Architecture with Prognostic Retention and
-Patient-Criticality Inheritance for Healthcare Edge Devices.
-Run with: python main_new.py
+LivingMemoryOS v4 Benchmark and Evaluation Runner
+
+This module serves as the command-line entry point for executing the complete
+LivingMemoryOS v4 workflow on the MIMIC-IV clinical dataset. It orchestrates
+machine learning model initialization, mortality-risk prediction, performance
+evaluation, memory simulation, and comparative benchmarking against a
+traditional FIFO memory management strategy. The benchmark measures the system's
+ability to retain clinically significant patient records using Clinical Memory
+Scores (CMS), prognostic retention policies, patient-criticality inheritance,
+and adaptive memory expansion mechanisms. It also generates detailed performance
+metrics, simulation statistics, and exportable result files that support
+analysis of memory efficiency, patient prioritization effectiveness, and
+healthcare edge-device deployment scenarios.
 """
 
 import time

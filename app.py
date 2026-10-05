@@ -1,8 +1,12 @@
 """
-LivingMemoryOS - Multi-Dataset Unified Streamlit Application
-LivingMemoryOS - Streamlit Application Entrypoint
-Run with: streamlit run app.py
-Allows seamless switching between the new MIMIC-IV 550k Clinical Cohort and the legacy 15k Telemetry dataset.
+LivingMemoryOS is a clinical memory-management and patient-prioritization framework
+that processes healthcare datasets, generates mortality-risk predictions using
+machine learning, computes Clinical Memory Scores (CMS), applies prognostic
+retention policies, and simulates adaptive memory replacement strategies. The
+system supports both the MIMIC-IV clinical cohort and a legacy ICU telemetry
+dataset, providing patient triage, tier assignment, memory retention analysis,
+capacity adaptation, and comparative benchmarking against standard FIFO memory
+management approaches.
 """
 
 import streamlit as st

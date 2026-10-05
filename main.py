@@ -1,6 +1,20 @@
 """
-Self-Evolving Clinical Memory Architecture with Prognostic Retention and
-Patient-Criticality Inheritance for Healthcare Edge Devices 
+LivingMemoryOS v3 Research Prototype
+
+This module implements a complete proof-of-concept framework for intelligent
+clinical memory management in healthcare edge environments. The system combines
+machine learning–based mortality prediction, patient criticality assessment,
+Clinical Memory Score (CMS) computation, prognostic trend analysis, and
+adaptive memory allocation to prioritize clinically important patient records.
+It evaluates incoming patient streams, assigns care levels and retention
+priorities, compares a tiered memory architecture against a traditional FIFO
+baseline, and dynamically reallocates memory resources based on observed
+clinical demand. The implementation also introduces prognostic early-warning
+mechanisms that identify unstable patients before they reach critical risk
+thresholds, enabling more proactive retention and triage decisions. The module
+serves as an end-to-end experimental platform for studying self-evolving memory
+architectures, healthcare edge-device optimization, and intelligent clinical
+data preservation strategies.
 """
 
 import heapq

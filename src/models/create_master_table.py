@@ -1,3 +1,15 @@
+"""
+Clinical Risk Dataset Construction Module
+
+Creates the master patient dataset used throughout the LivingMemoryOS pipeline
+by integrating patient demographics, hospital admissions, ICU stay information,
+and transfer history. The script derives key clinical risk indicators, including
+age risk, ICU severity risk, and escalation risk, through normalization of
+relevant patient attributes. These engineered features form the foundation for
+subsequent mortality prediction, Clinical Memory Score (CMS) calculation, and
+memory-retention simulations within the LivingMemoryOS framework.
+"""
+
 import pandas as pd
 
 # =====================================

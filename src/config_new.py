@@ -1,5 +1,16 @@
 """
-LivingMemoryOS v4 Configuration & Constants (MIMIC-IV Clinical Dataset)
+LivingMemoryOS v4 Configuration and System Parameters Module
+
+This module centralizes all global configuration settings, dataset locations,
+model inputs, scoring weights, protection thresholds, and adaptive memory
+management parameters used throughout LivingMemoryOS v4. It provides a single
+source of truth for file paths, machine learning feature definitions, Clinical
+Memory Score (CMS) weight distributions, prognostic retention rules, and
+self-evolving memory capacity controls. By isolating these constants from the
+core implementation, the system becomes easier to maintain, tune, reproduce,
+and deploy across different environments while ensuring consistent behavior
+across all clinical scoring, prediction, simulation, and memory management
+components.
 """
 
 import os

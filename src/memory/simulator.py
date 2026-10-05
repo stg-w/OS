@@ -1,7 +1,88 @@
 """
-Memory Simulator Module
-Orchestrates stream ingestion, evaluation, and comparative benchmarking between
-LivingMemoryOS (Tiered Min-Heap) and standard FIFO.
+LivingMemoryOS Simulation Engine
+================================
+
+Purpose
+-------
+Implements the core LivingMemoryOS memory-management simulation framework
+for intelligent retention of clinical telemetry data.
+
+Overview
+--------
+This module evaluates incoming patient telemetry streams, predicts
+mortality risk using a machine-learning classifier, computes Clinical
+Memory Scores (CMS), and simulates memory allocation under both
+traditional FIFO and LivingMemoryOS replacement policies.
+
+Unlike conventional memory managers that rely solely on arrival order,
+LivingMemoryOS prioritizes memory retention according to clinical
+importance, patient severity, and predicted risk.
+
+Core Components
+---------------
+1. Mortality Risk Prediction
+   - Uses a trained machine-learning model to estimate patient mortality.
+   - Produces a calibrated criticality score for each patient.
+
+2. Clinical Memory Scoring (CMS)
+   - Combines mortality risk, physiological severity,
+     biomarker abnormalities, and care-level importance.
+   - Generates a memory-retention priority score.
+
+3. Tier-Based Memory Architecture
+   - EMERGENCY Tier
+       Non-evictable storage reserved for critical patients.
+   - HIGH_PRIORITY Tier
+       Retains high-risk telemetry records.
+   - NORMAL Tier
+       Stores routine clinical monitoring data.
+
+4. Tiered Min-Heap Replacement
+   - Each tier maintains its own capacity constraints.
+   - Lower-priority records are preferentially removed when space is needed.
+   - Emergency records receive protection from eviction.
+
+5. FIFO Benchmark Comparison
+   - Executes a traditional FIFO memory simulation in parallel.
+   - Measures the retention advantage provided by LivingMemoryOS.
+
+Simulation Workflow
+-------------------
+1. Load test cohort telemetry data.
+2. Predict mortality probabilities.
+3. Calculate Clinical Memory Scores (CMS).
+4. Assign care levels and retention tiers.
+5. Simulate FIFO memory replacement.
+6. Simulate LivingMemoryOS tiered memory allocation.
+7. Compare retention effectiveness.
+8. Generate performance metrics and dashboard outputs.
+
+Key Metrics
+-----------
+The simulator reports:
+
+- Critical patient retention
+- Tier utilization statistics
+- Emergency admission failures
+- Memory occupancy
+- FIFO comparison metrics
+- Retention improvement percentage
+- Clinical memory composition
+
+Live Triage Support
+-------------------
+The simulator also supports real-time patient evaluation through
+the triage_single_patient() interface, allowing incoming telemetry
+streams to be immediately scored, classified, and assigned to the
+appropriate memory tier.
+
+Research Objective
+------------------
+Demonstrates that clinically-aware memory allocation can preserve
+high-value patient information more effectively than traditional
+operating-system replacement policies, improving retention of
+critical telemetry under constrained memory budgets.
+
 """
 
 from src.config import (

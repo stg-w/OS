@@ -1,3 +1,17 @@
+"""
+LivingMemoryOS v4 Simulation Pipeline
+
+This script implements the complete LivingMemoryOS memory-management workflow
+for clinical patient records. It computes Patient-Criticality Inheritance and
+Clinical Memory Scores (CMS), applies prognostic retention rules to protect
+high-risk patients from eviction, compares intelligent memory retention against
+a standard FIFO baseline, and dynamically expands memory capacity when a large
+number of emergency cases are detected. The simulation measures retention
+quality, protected patient preservation, emergency-case handling, and overall
+memory efficiency, then exports the resulting memory state and capacity
+evolution metrics for further analysis.
+"""
+
 import pandas as pd
 
 # =====================================================

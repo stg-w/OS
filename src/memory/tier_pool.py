@@ -1,6 +1,14 @@
 """
-Tier Pool Module
-Min-heap bounded memory pool with O(log n) eviction for LivingMemoryOS.
+LivingMemoryOS Tier Pool
+
+This module implements the core memory management structure used by 
+LivingMemoryOS. It maintains a bounded memory pool using a min-heap,
+allowing efficient O(log n) insertion and eviction operations based on
+Clinical Memory Score (CMS). When capacity is reached, lower-priority
+records can be replaced by higher-value records, ensuring that the most
+clinically significant patient data remains in memory. The pool also
+supports non-evictable tiers, such as EMERGENCY memory, where critical
+patient records are protected from replacement once admitted.
 """
 
 import heapq

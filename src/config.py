@@ -1,5 +1,15 @@
 """
-LivingMemoryOS Configuration & Constants
+LivingMemoryOS Configuration and Constants Module
+
+This module defines the core configuration settings, dataset paths, machine
+learning features, clinical thresholds, scoring weights, and memory allocation
+parameters used throughout the LivingMemoryOS framework. It serves as the
+central source of system-wide constants that govern mortality prediction,
+clinical risk assessment, care-level assignment, Clinical Memory Score (CMS)
+calculation, and tiered memory management. By separating configurable values
+from implementation logic, the module enables consistent behavior, easier
+maintenance, reproducible experiments, and flexible tuning of the system for
+different healthcare datasets and deployment environments.
 """
 
 import os

@@ -1,8 +1,96 @@
 """
-MIMIC-IV LivingMemory Simulator Module
-Implements memory replacement simulation with prognostic retention,
-victim selection (min-CMS of un-protected pages), adaptive capacity expansion,
-and comparison against baseline FIFO.
+MIMIC-IV LivingMemory Simulation Engine
+=======================================
+
+Purpose
+-------
+Implements the complete LivingMemoryOS simulation framework for evaluating
+clinical memory retention strategies using the MIMIC-IV patient cohort.
+
+Overview
+--------
+This module simulates how patient records are admitted, retained,
+protected, and evicted from memory under both traditional and
+clinical-priority-aware memory management policies.
+
+Each patient record is assigned a Clinical Memory Score (CMS)
+derived from multiple risk factors including:
+
+- AI mortality prediction
+- Age-related risk
+- ICU severity indicators
+- Clinical escalation risk
+- Biomarker abnormalities
+
+The simulator compares a standard FIFO memory replacement strategy
+against the LivingMemoryOS prognostic retention architecture.
+
+Core Features
+-------------
+1. AI-Assisted Risk Prediction
+   - Generates mortality-risk estimates using a trained classifier.
+   - Produces patient-specific clinical importance scores.
+
+2. Clinical Memory Scoring (CMS)
+   - Computes a composite retention score representing
+     patient criticality and memory value.
+
+3. Prognostic Retention
+   - High-CMS patients receive memory protection.
+   - Critical records remain resident longer than low-priority records.
+
+4. Intelligent Victim Selection
+   - When memory becomes full, the lowest-CMS
+     unprotected patient is selected for eviction.
+   - Replaces traditional access-history-only eviction logic.
+
+5. Adaptive Memory Expansion
+   - Dynamically increases memory capacity during periods
+     of elevated clinical emergency load.
+   - Prevents loss of critical patient information.
+
+6. FIFO Benchmark Comparison
+   - Executes a classical FIFO simulation in parallel.
+   - Measures retention improvement achieved by LivingMemoryOS.
+
+Research Objective
+------------------
+Demonstrates that memory systems informed by clinical significance
+can outperform traditional replacement algorithms by preserving
+high-risk patient information and improving overall memory quality.
+
+Simulation Workflow
+-------------------
+1. Load patient stream from MIMIC-IV dataset.
+2. Generate AI mortality predictions.
+3. Calculate Clinical Memory Scores (CMS).
+4. Classify patients into retention tiers.
+5. Simulate FIFO replacement.
+6. Simulate LivingMemoryOS prognostic retention.
+7. Apply adaptive capacity expansion.
+8. Compute performance metrics and comparative results.
+
+Outputs
+-------
+The simulator produces:
+
+- Average CMS retained in memory
+- Protected patient count
+- Emergency patient count
+- High-priority patient retention
+- FIFO comparison metrics
+- Memory improvement percentage
+- Eviction and rejection statistics
+- Final memory state rankings
+
+Clinical Significance
+---------------------
+Unlike traditional operating-system memory management,
+LivingMemoryOS treats memory as a clinically informed resource.
+Retention decisions are based on patient importance rather than
+arrival order alone, enabling persistent protection of
+high-risk and time-sensitive clinical records.
+
 """
 
 import os

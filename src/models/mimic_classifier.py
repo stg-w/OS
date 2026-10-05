@@ -1,7 +1,16 @@
 """
-MIMIC-IV Mortality Classifier Module
-Trains, evaluates, and predicts in-hospital mortality using real clinical features:
-age_risk, icu_risk, escalation_risk, and biomarker_risk.
+MIMIC-IV AI Mortality Prediction Engine
+
+This module provides the machine-learning component of LivingMemoryOS by
+training, evaluating, and serving a mortality-risk prediction model using
+clinical features derived from the MIMIC-IV dataset. It loads patient risk
+factors, performs stratified train-test validation, generates mortality
+probability estimates (AI Risk), evaluates predictive performance using
+clinical metrics, and caches trained models for faster deployment. The
+resulting risk predictions are used by downstream LivingMemoryOS components
+to calculate Clinical Memory Scores (CMS), prioritize critical patients,
+support prognostic retention decisions, and drive intelligent memory
+management within the healthcare simulation environment.
 """
 
 import os

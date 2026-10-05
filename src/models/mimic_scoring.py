@@ -1,7 +1,15 @@
 """
-MIMIC-IV Clinical Scoring Module
-Computes Patient-Criticality Inheritance, Clinical Memory Score (CMS),
-Prognostic Retention protection flags, and admission tiers according to LivingMemoryOS v4.
+MIMIC-IV Clinical Priority Scoring Engine
+
+This module implements the core decision-making logic of LivingMemoryOS by
+transforming patient risk indicators into actionable clinical priority scores.
+It calculates Patient-Criticality Inheritance, derives the composite Clinical
+Memory Score (CMS), determines prognostic retention protection status, and
+assigns patients to appropriate memory management tiers based on severity and
+clinical urgency. The scoring framework integrates AI-predicted mortality
+risk, biomarker abnormalities, ICU burden, escalation patterns, and age-related
+risk factors to support intelligent retention, prioritization, and adaptive
+resource allocation within the LivingMemoryOS architecture.
 """
 
 from src.config_new import (

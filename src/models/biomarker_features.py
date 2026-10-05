@@ -1,3 +1,14 @@
+"""
+Data Enrichment Script for Biomarker Risk Calculation
+
+This script augments the master patient dataset with a biomarker-based risk feature
+derived from laboratory results. It loads patient records and lab event data,
+identifies abnormal laboratory measurements, counts the number of abnormal results
+for each patient, and computes a normalized biomarker risk score. The resulting
+risk metric is merged back into the master dataset and saved for downstream
+clinical risk modeling, triage evaluation, and LivingMemoryOS simulations.
+"""
+
 import pandas as pd
 
 # =====================================

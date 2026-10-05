@@ -1,3 +1,19 @@
+"""
+Mortality Risk Prediction and AI Risk Generation Module
+
+This module trains and evaluates a Random Forest machine learning model for
+predicting in-hospital mortality using clinically engineered patient risk
+factors. The workflow includes dataset loading, feature selection, stratified
+train-test splitting, model training, performance evaluation, and probability
+estimation. For each patient, the model generates an AI Risk score representing
+the predicted likelihood of mortality based on age-related risk, ICU stay
+severity, transfer escalation patterns, and laboratory abnormalities. The
+resulting AI Risk scores are stored for use in subsequent LivingMemoryOS
+processes, including Patient-Criticality Inheritance calculation, Clinical
+Memory Score (CMS) computation, prognostic retention policies, patient
+prioritization, and adaptive memory management simulations.
+"""
+
 import pandas as pd
 
 from sklearn.model_selection import train_test_split

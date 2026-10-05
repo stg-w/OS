@@ -1,8 +1,18 @@
 """
-Clinical Scoring Module
-Calculates Clinical Memory Score (CMS), Care Escalation levels, and Triage Tiers.
-"""
+Clinical Scoring and Patient Prioritization Module
 
+This module serves as the core clinical decision engine of LivingMemoryOS by
+evaluating patient severity, assigning care levels, computing Clinical Memory
+Scores (CMS), and determining memory retention priority tiers. Using predicted
+mortality risk, physiological indicators, biomarker abnormalities, sepsis
+status, and care escalation requirements, the scorer converts raw clinical
+data into a unified priority metric. The module also generates human-readable
+clinical justifications for each patient's classification, enabling transparent
+triage decisions. Its outputs are used by the memory management subsystem to
+identify high-value patient records, prioritize critical cases, support
+emergency preservation policies, and optimize memory allocation toward the
+most clinically significant patients.
+"""
 from src.config import (
     DEFAULT_CARE_LEVEL_THRESHOLDS,
     BED_PRIORITY,
