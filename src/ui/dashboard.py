@@ -319,6 +319,48 @@ def render_dashboard():
             border: 1px solid #edf2f7;
             border-radius: 8px;
         }
+
+        /* Buttons */
+        div.stButton > button, div[data-testid="stForm"] button[kind="primary"], div[data-testid="stForm"] button {
+            background-color: #1a76d1 !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            transition: all 0.2s ease !important;
+        }
+
+        div.stButton > button:hover, div[data-testid="stForm"] button[kind="primary"]:hover, div[data-testid="stForm"] button:hover {
+            background-color: #135da7 !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(26, 118, 209, 0.25) !important;
+        }
+
+        /* Sliders */
+        div[data-testid="stSlider"] div[role="slider"] {
+            background-color: #1a76d1 !important;
+            border-color: #1a76d1 !important;
+        }
+
+        /* Inputs & Selectboxes */
+        div[data-baseweb="input"] > div, div[data-baseweb="select"] > div {
+            border-color: #d0e7f9 !important;
+            border-radius: 8px !important;
+        }
+
+        /* Download Button */
+        div[data-testid="stDownloadButton"] > button {
+            background-color: #e8f3fc !important;
+            color: #1a76d1 !important;
+            border: 1px solid #c9e4fb !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+        }
+
+        div[data-testid="stDownloadButton"] > button:hover {
+            background-color: #1a76d1 !important;
+            color: #ffffff !important;
+        }
         </style>
         """,
         unsafe_allow_html=True,

@@ -6,7 +6,6 @@ Allows seamless switching between the new MIMIC-IV 550k Clinical Cohort and the 
 """
 
 import streamlit as st
-from src.ui.dashboard import render_dashboard
 
 st.set_page_config(
     page_title="LivingMemoryOS | Clinical AI Memory Management",
@@ -30,9 +29,16 @@ with st.sidebar:
     )
     st.markdown("---")
 
+import importlib
+
 if "MIMIC-IV" in selected_dataset:
-    from src.ui.dashboard_new import render_dashboard
+    import src.ui.dashboard_new as d_mod
+    importlib.reload(d_mod)
+    render_dashboard = d_mod.render_dashboard
 else:
-    from src.ui.dashboard import render_dashboard
+    import src.ui.dashboard as d_mod
+    importlib.reload(d_mod)
+    render_dashboard = d_mod.render_dashboard
+
 if __name__ == "__main__":
     render_dashboard()

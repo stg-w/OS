@@ -323,6 +323,48 @@ def render_dashboard():
             border: 1px solid #edf2f7;
             border-radius: 8px;
         }
+
+        /* Buttons */
+        div.stButton > button, div[data-testid="stForm"] button[kind="primary"], div[data-testid="stForm"] button {
+            background-color: #1a76d1 !important;
+            color: #ffffff !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            transition: all 0.2s ease !important;
+        }
+
+        div.stButton > button:hover, div[data-testid="stForm"] button[kind="primary"]:hover, div[data-testid="stForm"] button:hover {
+            background-color: #135da7 !important;
+            color: #ffffff !important;
+            box-shadow: 0 4px 12px rgba(26, 118, 209, 0.25) !important;
+        }
+
+        /* Sliders */
+        div[data-testid="stSlider"] div[role="slider"] {
+            background-color: #1a76d1 !important;
+            border-color: #1a76d1 !important;
+        }
+
+        /* Inputs & Selectboxes */
+        div[data-baseweb="input"] > div, div[data-baseweb="select"] > div {
+            border-color: #d0e7f9 !important;
+            border-radius: 8px !important;
+        }
+
+        /* Download Button */
+        div[data-testid="stDownloadButton"] > button {
+            background-color: #e8f3fc !important;
+            color: #1a76d1 !important;
+            border: 1px solid #c9e4fb !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+        }
+
+        div[data-testid="stDownloadButton"] > button:hover {
+            background-color: #1a76d1 !important;
+            color: #ffffff !important;
+        }
         </style>
         """,
         unsafe_allow_html=True,
@@ -490,24 +532,26 @@ def render_dashboard():
                 unsafe_allow_html=True,
             )
             comp_df = pd.DataFrame({
-                "Algorithm": ["FIFO Baseline Queue", "LivingMemoryOS v4 (CAMR)"],
-                "Average Clinical Memory Score (CMS)": [sim_results["fifo_average_cms"], sim_results["living_average_cms"]],
-                "Protected Pages Retained": [sim_results["fifo_protected_pages"], sim_results["protected_pages"]],
+                "Algorithm": ["FIFO Baseline", "LivingMemoryOS v4 (CAMR)"],
+                "Protected Patients Retained": [sim_results["fifo_protected_pages"], sim_results["protected_pages"]],
+                "Standard Inpatients Retained": [
+                    len(sim_results["fifo_memory"]) - sim_results["fifo_protected_pages"],
+                    len(sim_results["living_memory"]) - sim_results["protected_pages"],
+                ],
             })
             fig_bar = px.bar(
                 comp_df,
                 x="Algorithm",
-                y="Average Clinical Memory Score (CMS)",
-                color="Algorithm",
-                color_discrete_sequence=["#e1effa", "#1a76d1"],
-                text_auto=".4f",
+                y=["Protected Patients Retained", "Standard Inpatients Retained"],
+                barmode="stack",
+                color_discrete_sequence=["#1a76d1", "#e1effa"],
             )
             fig_bar.update_layout(
                 plot_bgcolor="#ffffff",
                 paper_bgcolor="#ffffff",
                 font=dict(family="Poppins, Inter", color="#2c2d3f"),
                 height=320,
-                showlegend=False,
+                legend=dict(orientation="h", yanchor="bottom", y=1.02, xanchor="right", x=1),
                 margin=dict(t=10, b=10, l=10, r=10),
             )
             st.plotly_chart(fig_bar, use_container_width=True)
@@ -900,5 +944,4 @@ def render_dashboard():
 render_mimic_dashboard = render_dashboard
 
 if __name__ == "__main__":
-    render_dashboard()
     render_dashboard()
