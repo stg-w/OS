@@ -37,8 +37,8 @@ RESULTS_V4_PATH = "livingmemory_results_v4.csv"
 CAPACITY_V4_PATH = "capacity_evolution_v4.csv"
 DATASET_PATH = _resolve_data_path("features.csv")
 MODEL_OUTPUT_PATH = _resolve_data_path("model_output.csv")
-RESULTS_V4_PATH = _resolve_data_path("livingmemory_results_new.csv") if os.path.exists(_resolve_data_path("livingmemory_results_new.csv")) else _resolve_data_path("livingmemory_results_v4.csv")
-CAPACITY_V4_PATH = _resolve_data_path("capacity_evolution_new.csv") if os.path.exists(_resolve_data_path("capacity_evolution_new.csv")) else _resolve_data_path("capacity_evolution_v4.csv")
+RESULTS_V4_PATH = _resolve_data_path("livingmemory_results_v4.csv")
+CAPACITY_V4_PATH = _resolve_data_path("capacity_evolution_v4.csv")
 
 # Model Features & Target
 FEATURES = [

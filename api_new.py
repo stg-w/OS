@@ -4,8 +4,7 @@ Dedicated backend service for LivingMemoryOS v4.
 Run with: python api_new.py
 """
 
-from src.api.server import app
-from src.api.server_new import run_server
+from src.api.server_new import app
 
 if __name__ == "__main__":
     print("==========================================================")
@@ -26,5 +25,3 @@ if __name__ == "__main__":
     print("   GET  /api/capacity-evolution")
     print("==========================================================")
     app.run(host="0.0.0.0", port=5000, debug=False)
-    run_server(host="0.0.0.0", port=5000)
-

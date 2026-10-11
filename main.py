@@ -80,7 +80,6 @@ CAPACITY_STEP = 3
 # LOAD DATA
 # =====================================================
 
-df = pd.read_csv("ICU_Patient_Monitoring_Mortality_Prediction_15000.csv")
 import os
 _data_path = os.path.join("data", "ICU_Patient_Monitoring_Mortality_Prediction_15000.csv")
 if not os.path.exists(_data_path):

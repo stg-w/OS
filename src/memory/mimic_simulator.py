@@ -194,9 +194,11 @@ class MimicLivingMemorySimulator:
         living = []
         rejected_count = 0
         eviction_count = 0
+        adaptive_capacity = memory_size
+        next_expansion_trigger = max(1, adaptive_trigger_count)
 
         for page in scored_pages:
-            if len(living) < memory_size:
+            if len(living) < adaptive_capacity:
                 living.append(page)
             else:
                 candidates = [p for p in living if not p["protected"]]
@@ -212,11 +214,19 @@ class MimicLivingMemorySimulator:
                 else:
                     rejected_count += 1
 
-        # Adaptive capacity
+            # Expand while processing the stream. Each emergency block can
+            # trigger one expansion, rather than expanding on every page.
+            emergency_pages = sum(
+                1 for retained in living if retained["cms"] >= emergency_threshold
+            )
+            if (
+                adaptive_expansion_step > 0
+                and emergency_pages >= next_expansion_trigger
+            ):
+                adaptive_capacity += adaptive_expansion_step
+                next_expansion_trigger += max(1, adaptive_trigger_count)
+
         emergency_pages = sum(1 for p in living if p["cms"] >= emergency_threshold)
-        adaptive_capacity = memory_size
-        if emergency_pages > adaptive_trigger_count:
-            adaptive_capacity += adaptive_expansion_step
 
         fifo_avg = sum(p["cms"] for p in fifo) / max(1, len(fifo))
         living_avg = sum(p["cms"] for p in living) / max(1, len(living))
@@ -302,4 +312,3 @@ class MimicLivingMemorySimulator:
             "tier": eval_res["tier"],
             "reason": eval_res["reason"],
         }
-
